@@ -1,13 +1,38 @@
 <template>
-  <div>
+  <div id="container">
     <SearchBar v-on:new-input="fetchData" />
     <SearchResults :prop="results" @fetch-definition="fetchDefinition">
-      <article v-for="(entry, index) in japRes" :key="index">
-        <li v-html="entry.innerHTML"></li>
-      </article>
-      <article v-for="(entry, index) in engRes" :key="-index-1">
-        <li v-html="entry.innerHTML"></li>
-      </article>
+
+      <section id="results">
+
+        <section id="japRes">
+
+          <h2 v-if="japRes" class="collapse"  @click="(e)=>e.target.parentNode.querySelectorAll('article').forEach((x)=>{(x.style.display == 'none') ?  x.style.display = 'block' : x.style.display = 'none'})" >日本語</h2>
+
+          <article
+            v-for="(entry, index) in japRes"
+            :key="index"
+            class="definition"
+            v-html="entry.innerHTML"
+          ></article>
+
+        </section>
+
+
+        <section id="engRes">
+
+          <h2 v-if="engRes" class="collapse">English</h2>
+
+          <article
+            v-for="(entry, index) in engRes"
+            :key="-index - 1"
+            class="definition"
+            v-html="entry.innerHTML"
+          ></article>
+
+        </section>
+
+      </section>
     </SearchResults>
   </div>
 </template>
@@ -16,12 +41,10 @@
 import SearchBar from "./components/SearchBar.vue";
 import SearchResults from "./components/SearchResults.vue";
 
-// Firebase App (the core Firebase SDK) is always required and must be listed first
+import "./assets/css/main.css";
+
 import * as firebase from "firebase/app";
-
-// If you enabled Analytics in your project, add the Firebase SDK for Analytics
 import "firebase/analytics";
-
 
 const firebaseConfig = {
   apiKey: process.env.VUE_APP_API_KEY,
@@ -31,7 +54,7 @@ const firebaseConfig = {
   storageBucket: "adroit-autumn-237308.appspot.com",
   messagingSenderId: "411441913058",
   appId: "1:411441913058:web:7ddf2db626f6a036df92bb",
-  measurementId: "G-2K44H693HQ"
+  measurementId: "G-2K44H693HQ",
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -58,6 +81,7 @@ export default {
 
     cx: () => "partner-pub-8353708690493468:1896422876",
   },
+
   methods: {
     async fetchData(input) {
       console.log("fired fetchData", "input", input);
@@ -71,9 +95,7 @@ export default {
     },
 
     async fetchDefinition(e) {
-      this.fetchEng(e.title);
-
-      this.fetchJap(e.link);
+      await Promise.all([this.fetchJap(e.link), this.fetchEng(e.title)]);
     },
 
     async fetchJap(url) {
@@ -86,7 +108,7 @@ export default {
       const htmlData = parser
         .parseFromString(data.contents, "text/html")
         .getElementById("mainArea")
-        .querySelectorAll("article section.description");
+        .querySelectorAll("article .description");
       this.japRes = htmlData ? htmlData : "No Results";
       console.log(data, this.japRes);
     },
@@ -102,19 +124,21 @@ export default {
       }
       term = match ? match : term.replace(/とは\s-\s.*/g, "");
       console.log("fetching for term:", term);
-      const uri = await `http://nihongo.monash.edu/cgi-bin/wwwjdic?1ZUJ${encodeURIComponent(
+      const uri = await `http://nihongo.monash.edu/cgi-bin/wwwjdic?1MUJ${encodeURIComponent(
         term
       )}`;
       const response = await fetch(
         `https://api.allorigins.win/get?url=${encodeURIComponent(uri)}`
       );
       const data = await response.json();
-      const parsed = await parser
-        .parseFromString(data.contents, "text/html")
-        .querySelector("pre");
-      this.engRes = [parsed];
 
-      console.log("parsed value: ", parsed);
+      const htmlData = parser
+        .parseFromString(data.contents, "text/html")
+        .querySelectorAll("div[style='clear: both;']");
+
+      this.engRes = htmlData ? htmlData : "No Results";
+
+      console.log("parsed value: ", htmlData);
     },
   },
 };

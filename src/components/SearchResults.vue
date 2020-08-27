@@ -1,12 +1,12 @@
 <template>
   <main>
-    <ol>
-      <li v-for="(entry, index) in prop" :key="index">
+    <ul id="hits-container">
+      <li v-for="(entry, index) in prop" :key="index" class="hits">
         <p @click="$emit('fetch-definition', entry)" target="__blank">
           {{ parseResults(entry.title) }}
         </p>
       </li>
-    </ol>
+    </ul>
 
     <section>
       <slot></slot>
