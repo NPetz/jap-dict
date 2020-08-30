@@ -2,12 +2,23 @@
   <div id="container">
     <SearchBar v-on:new-input="fetchData" />
     <SearchResults :prop="results" @fetch-definition="fetchDefinition">
-
       <section id="results">
-
         <section id="japRes">
-
-          <h2 v-if="japRes" class="collapse"  @click="(e)=>e.target.parentNode.querySelectorAll('article').forEach((x)=>{(x.style.display == 'none') ?  x.style.display = 'block' : x.style.display = 'none'})" >日本語</h2>
+          <div class="loader" v-if="searchingJap"></div>
+          <h2
+            v-if="japRes"
+            class="collapse"
+            @click="
+              (e) =>
+                e.target.parentNode.querySelectorAll('article').forEach((x) => {
+                  x.style.display == 'none'
+                    ? (x.style.display = 'block')
+                    : (x.style.display = 'none');
+                })
+            "
+          >
+            日本語
+          </h2>
 
           <article
             v-for="(entry, index) in japRes"
@@ -15,13 +26,24 @@
             class="definition"
             v-html="entry.innerHTML"
           ></article>
-
         </section>
 
-
         <section id="engRes">
-
-          <h2 v-if="engRes" class="collapse">English</h2>
+          <div class="loader" v-if="searchingEng"></div>
+          <h2
+            v-if="engRes"
+            class="collapse"
+            @click="
+              (e) =>
+                e.target.parentNode.querySelectorAll('article').forEach((x) => {
+                  x.style.display == 'none'
+                    ? (x.style.display = 'block')
+                    : (x.style.display = 'none');
+                })
+            "
+          >
+            English
+          </h2>
 
           <article
             v-for="(entry, index) in engRes"
@@ -29,9 +51,7 @@
             class="definition"
             v-html="entry.innerHTML"
           ></article>
-
         </section>
-
       </section>
     </SearchResults>
   </div>
@@ -70,9 +90,12 @@ export default {
 
   data: function() {
     return {
+      currentWord: null,
       results: null,
       japRes: null,
       engRes: null,
+      searchingJap: false,
+      searchingEng: false,
     };
   },
 
@@ -84,9 +107,14 @@ export default {
 
   methods: {
     async fetchData(input) {
-      console.log("fired fetchData", "input", input);
+      const value = input.value;
 
-      const uri = `https://www.googleapis.com/customsearch/v1?key=${this.api}&cx=${this.cx}&q=${input}`;
+      input.style.background = "black";
+      input.value = "";
+
+      console.log("fired fetchData", "input", value);
+
+      const uri = `https://www.googleapis.com/customsearch/v1?key=${this.api}&cx=${this.cx}&q=${value}`;
       console.log(uri);
       const response = await fetch(uri);
       const data = await response.json();
@@ -94,27 +122,47 @@ export default {
       console.log(data);
     },
 
+
+
     async fetchDefinition(e) {
-      await Promise.all([this.fetchJap(e.link), this.fetchEng(e.title)]);
+      Promise.all([
+        this.fetchJap(e.link),
+        this.fetchEng(e.title),
+      ]);
     },
 
     async fetchJap(url) {
+      this.searchingJap = true;
+      this.japRes = null;
       console.log("fetching definitionfrom:", url);
 
       const response = await fetch(
         `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
       );
       const data = await response.json();
-      const htmlData = parser
+      let htmlData = parser
         .parseFromString(data.contents, "text/html")
         .getElementById("mainArea")
         .querySelectorAll("article .description");
+
+      htmlData.forEach((x) => {
+        x.querySelectorAll("a").forEach((x) => {
+          let y = (document.createElement("span").innerText = x.innerText);
+          x.replaceWith(y);
+        });
+        x.querySelectorAll("img").forEach((x) => {
+          x.remove();
+        });
+      });
       this.japRes = htmlData ? htmlData : "No Results";
+      this.searchingJap = false;
       console.log(data, this.japRes);
     },
 
     async fetchEng(term) {
-      console.log("fethcing englsih defnitnon", term);
+      this.searchingEng = true;
+      this.engRes = null;
+      console.log("fethcing english defnitnon", term);
       let match = null;
 
       try {
@@ -136,7 +184,22 @@ export default {
         .parseFromString(data.contents, "text/html")
         .querySelectorAll("div[style='clear: both;']");
 
-      this.engRes = htmlData ? htmlData : "No Results";
+      htmlData.forEach((x) => {
+        x.querySelectorAll("div > input").forEach((x) => {
+          x.remove();
+        });
+        x.querySelectorAll("a").forEach((x) => {
+          if (x.innerText == "[Links]") {
+            x.remove();
+          } else {
+            let y = (document.createElement("span").innerText = x.innerText);
+            x.replaceWith(y);
+          }
+        });
+      });
+
+      this.engRes = htmlData.length != 0 ? htmlData : [<p>NO Results</p>];
+      this.searchingEng = false;
 
       console.log("parsed value: ", htmlData);
     },
