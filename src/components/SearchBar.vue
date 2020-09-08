@@ -6,8 +6,6 @@
 </template>
 
 <script>
-
-
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("input").addEventListener("transitionend", (e) => {
     e.target.style.background = "white";

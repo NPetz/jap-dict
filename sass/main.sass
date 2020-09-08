@@ -96,14 +96,11 @@ li
 
             .yomi
                 display: block
-                width: max-content
                 position: absolute
-                bottom: -2.5em
-                margin: 0 auto
-                left: -0.5em
-                right: -0.5em
-                text-align: center
-                font-weight: bold
+                width: max-content
+                bottom: -2em
+                left: 50%
+                transform: translate(-50%, 0)
 
 #results
     display: flex
@@ -116,7 +113,7 @@ li
     > section
         min-width: 300px
         width: calc(50% - 1em)
-        margin: 0 0.5em
+        margin: 0.5em
 
 
 .definition
@@ -154,6 +151,7 @@ li
     animation: spin 2s linear infinite
     margin: 1em
 
+
 #engRes
     font
         font-size: 1em
@@ -166,17 +164,14 @@ li
         transform: rotate(360deg)
 
 .active
-    transform: scale(1.3)
     background: white !important
     color: black !important
     z-index: 100
     .yomi
         display: block !important
-        width: max-content
         position: absolute
-        bottom: -2.5em
-        margin: 0 auto
-        left: -0.5em
-        right: -0.5em
-        text-align: center
-        font-weight: bold
+        width: max-content
+        bottom: -2em
+        left: 50%
+        transform: translate(-50%, 0)
+        

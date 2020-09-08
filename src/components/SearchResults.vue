@@ -3,19 +3,19 @@
     <ul id="hits-container" v-if="prop">
       <li v-for="(entry, index) in prop" :key="index" class="hits">
         <p
-          @click="$emit('fetch-definition', entry);toggleActive($event)"
+          @click="
+            $emit('fetch-definition', entry);
+            toggleActive($event);
+          "
           target="__blank"
           class="kanji"
         >
           {{ parseResults(entry.title).text }}
         </p>
-        <p class="yomi">{{ parseResults(entry.title).yomi[1] }}</p>
+        <p class="yomi">{{ parseResults(entry.title).yomi }}</p>
       </li>
     </ul>
-
-    <section>
-      <slot></slot>
-    </section>
+    <slot></slot>
   </main>
 </template>
 
@@ -25,25 +25,24 @@ export default {
   props: ["prop"],
   methods: {
     parseResults(text) {
-      console.log("original text = ", text);
       const endString = /とは\s-\s.*/g;
       const inParenthesis = /\(([^\s]*)?\)/;
       text = text.replace(endString, "");
 
-      console.log("stripped of to ha", text);
-      const yomi = text.match(inParenthesis);
+      let yomi = text.match(inParenthesis);
 
-      console.log("yomi", yomi);
+      yomi = yomi ? yomi[1] : "";
 
-      text = text.replace(/\(.*/, "").replace(/\s*/g,"")
+      text = text.replace(/\(.*/, "").replace(/\s*/g, "");
 
-      return { text: text, yomi: yomi ? yomi : ["", text] };
+      return { text: text, yomi: yomi ? yomi : text };
     },
-        async toggleActive(e) {
-      console.log('fired ToggleActive',e)
-      let hits = await document.querySelectorAll('.hits');
-      await console.log(hits)
-      await hits.forEach((x) => {x.classList.remove("active")});
+
+    async toggleActive(e) {
+      let hits = await document.querySelectorAll(".hits");
+      await hits.forEach((x) => {
+        x.classList.remove("active");
+      });
 
       e.target.parentElement.classList.add("active");
     },

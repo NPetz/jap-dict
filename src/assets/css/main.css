@@ -99,14 +99,11 @@ li {
 }
 #hits-container .hits:hover .yomi {
   display: block;
-  width: max-content;
   position: absolute;
-  bottom: -2.5em;
-  margin: 0 auto;
-  left: -0.5em;
-  right: -0.5em;
-  text-align: center;
-  font-weight: bold;
+  width: max-content;
+  bottom: -2em;
+  left: 50%;
+  transform: translate(-50%, 0);
 }
 
 #results {
@@ -120,7 +117,7 @@ li {
 #results > section {
   min-width: 300px;
   width: calc(50% - 1em);
-  margin: 0 0.5em;
+  margin: 0.5em;
 }
 
 .definition {
@@ -177,21 +174,17 @@ li {
   }
 }
 .active {
-  transform: scale(1.3);
   background: white !important;
   color: black !important;
   z-index: 100;
 }
 .active .yomi {
   display: block !important;
-  width: max-content;
   position: absolute;
-  bottom: -2.5em;
-  margin: 0 auto;
-  left: -0.5em;
-  right: -0.5em;
-  text-align: center;
-  font-weight: bold;
+  width: max-content;
+  bottom: -2em;
+  left: 50%;
+  transform: translate(-50%, 0);
 }
 
 /*# sourceMappingURL=main.css.map */

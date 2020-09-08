@@ -1,22 +1,16 @@
 <template>
   <div id="container">
-    <SearchBar v-on:new-input="fetchData" />
+    <SearchBar
+      v-on:new-input="
+        fetchData($event);
+        reset();
+      "
+    />
     <SearchResults :prop="results" @fetch-definition="fetchDefinition">
       <section id="results">
         <section id="japRes">
           <div class="loader" v-if="searchingJap"></div>
-          <h2
-            v-if="japRes"
-            class="collapse"
-            @click="
-              (e) =>
-                e.target.parentNode.querySelectorAll('article').forEach((x) => {
-                  x.style.display == 'none'
-                    ? (x.style.display = 'block')
-                    : (x.style.display = 'none');
-                })
-            "
-          >
+          <h2 v-if="japRes" class="collapse" @click="collapse">
             日本語
           </h2>
 
@@ -30,24 +24,13 @@
 
         <section id="engRes">
           <div class="loader" v-if="searchingEng"></div>
-          <h2
-            v-if="engRes"
-            class="collapse"
-            @click="
-              (e) =>
-                e.target.parentNode.querySelectorAll('article').forEach((x) => {
-                  x.style.display == 'none'
-                    ? (x.style.display = 'block')
-                    : (x.style.display = 'none');
-                })
-            "
-          >
+          <h2 v-if="engRes" class="collapse" @click="collapse">
             English
           </h2>
 
           <article
             v-for="(entry, index) in engRes"
-            :key="-index - 1"
+            :key="`eng${index}`"
             class="definition"
             v-html="entry.innerHTML"
           ></article>
@@ -90,7 +73,6 @@ export default {
 
   data: function() {
     return {
-      currentWord: null,
       results: null,
       japRes: null,
       engRes: null,
@@ -112,29 +94,19 @@ export default {
       input.style.background = "black";
       input.value = "";
 
-      console.log("fired fetchData", "input", value);
-
       const uri = `https://www.googleapis.com/customsearch/v1?key=${this.api}&cx=${this.cx}&q=${value}`;
-      console.log(uri);
       const response = await fetch(uri);
       const data = await response.json();
       this.results = data.items;
-      console.log(data);
     },
 
-
-
     async fetchDefinition(e) {
-      Promise.all([
-        this.fetchJap(e.link),
-        this.fetchEng(e.title),
-      ]);
+      Promise.all([this.fetchJap(e.link), this.fetchEng(e.title)]);
     },
 
     async fetchJap(url) {
       this.searchingJap = true;
       this.japRes = null;
-      console.log("fetching definitionfrom:", url);
 
       const response = await fetch(
         `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
@@ -156,13 +128,12 @@ export default {
       });
       this.japRes = htmlData ? htmlData : "No Results";
       this.searchingJap = false;
-      console.log(data, this.japRes);
     },
 
     async fetchEng(term) {
       this.searchingEng = true;
       this.engRes = null;
-      console.log("fethcing english defnitnon", term);
+
       let match = null;
 
       try {
@@ -170,8 +141,8 @@ export default {
       } catch (e) {
         console.log("no match", e);
       }
+
       term = match ? match : term.replace(/とは\s-\s.*/g, "");
-      console.log("fetching for term:", term);
       const uri = await `http://nihongo.monash.edu/cgi-bin/wwwjdic?1MUJ${encodeURIComponent(
         term
       )}`;
@@ -198,10 +169,27 @@ export default {
         });
       });
 
-      this.engRes = htmlData.length != 0 ? htmlData : [<p>NO Results</p>];
+      this.engRes = htmlData.length != 0 ? htmlData : ["No Results"];
       this.searchingEng = false;
+    },
 
-      console.log("parsed value: ", htmlData);
+    collapse(e) {
+      e.target.parentNode.querySelectorAll("article").forEach((x) => {
+        x.style.display == "none"
+          ? (x.style.display = "block")
+          : (x.style.display = "none");
+      });
+    },
+
+    reset() {
+      this.japRes = null;
+      this.engRes = null;
+
+      try {
+        document.querySelector(".active").classList.remove("active");
+      } catch {
+        console.log("no element active");
+      }
     },
   },
 };
