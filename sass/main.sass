@@ -68,10 +68,13 @@ li
 #hits-container
     display: flex
     flex-flow: row wrap
-    justify-content: flex-start
+    justify-content: space-between
     margin: 0
     padding: 2em
     background: lightgrey
+    &::after
+        content: ''
+        flex: auto
 
     .hits
         margin: 1em 0.3em
