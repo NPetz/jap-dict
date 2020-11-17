@@ -1,7 +1,8 @@
 @import 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP&family=Noto+Serif+JP&display=swap';
 body {
   font-family: "Noto Sans JP", sans-serif;
-  font-size: 4vmin;
+  font-size: 4.2vmin;
+  background: #274156;
   margin: 0;
   padding: 0;
 }
@@ -15,31 +16,23 @@ li {
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
-  align-items: stretch;
-  background: black;
-  padding-bottom: 2em;
 }
 
 #form {
   font-family: inherit;
-  padding: 2em 0;
   display: flex;
-  flex-flow: row nowrap;
   justify-content: center;
-  align-items: center;
-  width: 100%;
-  background: dimgrey;
+  padding: 2em;
+  background: #D0CCD0;
 }
 #form button {
-  display: inline-block;
   border: none;
-  min-height: 2.4em;
-  min-width: 2.4em;
+  height: 2.4em;
   padding: 0 1em;
   margin: 0;
   text-decoration: none;
-  background: #000000;
-  color: #ffffff;
+  background: #274156;
+  color: #FBFCFF;
   font-size: 1em;
   cursor: pointer;
   text-align: center;
@@ -47,18 +40,18 @@ li {
 }
 #form button:active {
   transform: scale(0.9);
-  background: dimgrey;
+  background: #D0CCD0;
 }
 #form button:focus {
   outline: none;
 }
 #form input {
   font-size: 1em;
-  min-height: 2em;
-  min-width: 15em;
+  height: 2em;
+  flex-grow: 2;
   padding: 0 1em;
   margin: 0;
-  border: 0.2em solid black;
+  border: 0.2em solid #274156;
   outline: none;
 }
 #form input:hover {
@@ -71,10 +64,9 @@ li {
 #hits-container {
   display: flex;
   flex-flow: row wrap;
-  justify-content: space-between;
   margin: 0;
-  padding: 2em;
-  background: lightgrey;
+  padding: 1em 2em;
+  background: #FBFCFF;
 }
 #hits-container::after {
   content: "";
@@ -83,22 +75,22 @@ li {
 #hits-container .hits {
   margin: 1em 0.3em;
   padding: 0.3em;
-  border: 0.05em solid black;
-  color: white;
-  background: black;
+  border: 0.05em solid #274156;
+  color: #FBFCFF;
+  background: #274156;
   position: relative;
 }
 #hits-container .hits p {
   margin: 0;
   padding: 0;
-  font-size: 0.6em;
+  font-size: 0.8em;
 }
 #hits-container .hits .yomi {
   display: none;
 }
 #hits-container .hits:hover {
-  color: black;
-  background-color: white;
+  color: #274156;
+  background-color: #FBFCFF;
   cursor: pointer;
 }
 #hits-container .hits:hover .yomi {
@@ -115,26 +107,25 @@ li {
   flex-flow: row wrap;
   justify-content: center;
   align-items: stretch;
-  margin: 0 1em;
-  padding-top: 1em;
+  padding: 2em;
 }
 #results > section {
-  min-width: 300px;
-  width: calc(50% - 1em);
-  margin: 0.5em;
+  min-width: 20em;
+  width: calc( 50% - 2em );
+  margin: 1em;
 }
 
 .definition {
-  margin-top: 1em;
+  margin: 1em 0;
   padding: 2em;
-  border: 0.1em solid black;
-  outline: 0.1em solid white;
-  background: white;
+  border: 0.1em solid #274156;
+  outline: 0.1em solid #FBFCFF;
+  background: #FBFCFF;
 }
 
 .collapse {
   position: relative;
-  color: white;
+  color: #FBFCFF;
   margin: 0;
 }
 .collapse::after {
@@ -145,9 +136,10 @@ li {
   height: 0;
   right: 0;
   top: 50%;
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-top: 20px solid #ffffff;
+  border: 0.3em solid #FBFCFF;
+}
+.collapse:active::after {
+  animation: collapse 150ms normal forwards;
 }
 
 #input {
@@ -155,18 +147,13 @@ li {
 }
 
 .loader {
-  border: 1em solid #f3f3f3;
-  border-top: 1em solid #000000;
+  border: 1em solid #FBFCFF;
+  border-top: 1em solid #274156;
   border-radius: 50%;
   width: 2em;
   height: 2em;
   animation: spin 2s linear infinite;
   margin: 1em;
-}
-
-#engRes font {
-  font-size: 1em;
-  font-weight: bold;
 }
 
 @keyframes spin {
@@ -177,9 +164,18 @@ li {
     transform: rotate(360deg);
   }
 }
+@keyframes collapse {
+  0% {
+    border: 0.3em solid #FBFCFF;
+  }
+  100% {
+    border: 0.3em solid #FBFCFF;
+    border-radius: 50%;
+  }
+}
 .active {
-  background: white !important;
-  color: black !important;
+  background: #FBFCFF !important;
+  color: #274156 !important;
   z-index: 100;
 }
 .active .yomi {

@@ -1,8 +1,13 @@
 @import 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP&family=Noto+Serif+JP&display=swap'
 
+$dark: #274156
+$medium: #D0CCD0
+$light: #FBFCFF
+
 body
     font-family: 'Noto Sans JP', sans-serif
-    font-size: 4vmin
+    font-size: 4.2vmin
+    background: $dark
     margin: 0
     padding: 0
 
@@ -14,32 +19,23 @@ li
     display: flex
     flex-flow: column nowrap
     justify-content: flex-start
-    align-items: stretch
-    background: black
-    padding-bottom: 2em
-
 
 #form
     font-family: inherit
-    padding: 2em 0
     display: flex
-    flex-flow: row nowrap
     justify-content: center
-    align-items: center
-    width: 100%
-    background: dimgrey
+    padding: 2em
+    background: $medium
 
     button
 
-        display: inline-block
         border: none
-        min-height: 2.4em
-        min-width: 2.4em
+        height: 2.4em
         padding: 0 1em
         margin: 0
         text-decoration: none
-        background: #000000
-        color: #ffffff
+        background: $dark
+        color: $light
         font-size: 1em
         cursor: pointer
         text-align: center
@@ -47,18 +43,18 @@ li
 
         &:active
             transform: scale(0.9)
-            background: dimgrey
+            background: $medium
 
         &:focus
             outline: none
 
     input
         font-size: 1em
-        min-height: 2em
-        min-width: 15em
+        height: 2em
+        flex-grow: 2
         padding: 0 1em
         margin: 0
-        border: 0.2em solid black
+        border: 0.2em solid $dark
         outline: none
         &:hover
             outline: none
@@ -68,10 +64,9 @@ li
 #hits-container
     display: flex
     flex-flow: row wrap
-    justify-content: space-between
     margin: 0
-    padding: 2em
-    background: lightgrey
+    padding: 1em 2em
+    background: $light
     &::after
         content: ''
         flex: auto
@@ -79,22 +74,22 @@ li
     .hits
         margin: 1em 0.3em
         padding: 0.3em
-        border: 0.05em solid black
-        color: white
-        background: black
+        border: 0.05em solid $dark
+        color: $light
+        background: $dark
         position: relative
 
         p
             margin: 0
             padding: 0
-            font-size: 0.6em
-        
+            font-size: 0.8em
+
         .yomi
             display: none
 
         &:hover
-            color: black
-            background-color: white
+            color: $dark
+            background-color: $light
             cursor: pointer
 
             .yomi
@@ -110,25 +105,24 @@ li
     flex-flow: row wrap
     justify-content: center
     align-items: stretch
-    margin: 0 1em 
-    padding-top: 1em
+    padding: 2em
 
     > section
-        min-width: 300px
-        width: calc(50% - 1em)
-        margin: 0.5em
-
+        min-width: 20em
+        width: calc( 50% - 2em ) 
+        margin: 1em
 
 .definition
-    margin-top: 1em
+    margin: 1em 0
     padding: 2em
-    border: 0.1em solid black
-    outline: 0.1em solid white
-    background: white
+    border: 0.1em solid $dark
+    outline: 0.1em solid $light
+    background: $light
+
 
 .collapse
     position: relative
-    color: white
+    color: $light
     margin: 0
     &::after
         cursor: pointer
@@ -138,16 +132,16 @@ li
         height: 0
         right: 0
         top: 50%
-        border-left: 20px solid transparent
-        border-right: 20px solid transparent
-        border-top: 20px solid #ffffff
+        border: 0.3em solid $light
+    &:active::after
+        animation: collapse 150ms normal forwards
 
 #input
     transition: background 0.2s cubic-bezier(1,-0.02,.98,.68)
 
 .loader
-    border: 1em solid #f3f3f3
-    border-top: 1em solid #000000
+    border: 1em solid $light
+    border-top: 1em solid $dark
     border-radius: 50%
     width: 2em
     height: 2em
@@ -155,20 +149,22 @@ li
     margin: 1em
 
 
-#engRes
-    font
-        font-size: 1em
-        font-weight: bold
-
 @keyframes spin
     0%
         transform: rotate(0deg)
     100%
         transform: rotate(360deg)
 
+@keyframes collapse
+    0%
+        border: 0.3em solid $light
+    100%
+        border: 0.3em solid $light
+        border-radius: 50%
+
 .active
-    background: white !important
-    color: black !important
+    background: $light !important
+    color: $dark !important
     z-index: 100
     .yomi
         display: block !important
@@ -177,4 +173,3 @@ li
         bottom: -2em
         left: 50%
         transform: translate(-50%, 0)
-        
