@@ -1,7 +1,6 @@
 
 
 
-    <!-- v-on:submit.prevent="$emit('new-input', $event.target[0])" -->
 <template>
   <form
     id="form"
@@ -11,8 +10,23 @@
       $emit('search', $event.target[0].value);
     "
   >
-    <input type="text" placeholder="日本語か英語の言葉" id="input" />
-    <button class="ripple" type="submit">検索</button>
+    <input type="text" placeholder="lookup a japanese word" id="input" />
+    <button class="ripple" type="submit">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        version="1.1"
+        width="20px"
+        height="20px"
+        viewBox="0 0 124.524 124.524"
+        xml:space="preserve"
+      >
+        <path
+          fill="#eee"
+          d="M51,102.05c10.5,0,20.2-3.2,28.3-8.6l29.3,29.3c2.301,2.3,6.101,2.3,8.5,0l5.7-5.7c2.3-2.3,2.3-6.1,0-8.5L93.4,79.35   c5.399-8.1,8.6-17.8,8.6-28.3c0-28.1-22.9-51-51-51c-28.1,0-51,22.9-51,51C0,79.149,22.8,102.05,51,102.05z M51,20.05   c17.1,0,31,13.9,31,31c0,17.1-13.9,31-31,31c-17.1,0-31-13.9-31-31C20,33.95,33.9,20.05,51,20.05z"
+        />
+      </svg>
+    </button>
   </form>
 </template>
 
@@ -25,9 +39,14 @@ export default {
       let val = e.target[0].value;
       if (val.length > 0) {
         this.firstTime = false;
+        // remove active
+        let hits = document.querySelectorAll(".active");
+        hits.forEach((x) => {
+          x.classList.remove("active");
+        });
       } else {
         this.shake = true;
-        setTimeout(() => (this.shake = false), 1000);
+        setTimeout(() => (this.shake = false), 820);
       }
     },
   },
@@ -37,10 +56,8 @@ export default {
 <style scoped>
 form {
   display: flex;
-  margin: 0 auto;
-  box-shadow: 0 0 1px #555;
   font-family: "Montserrat", "Noto Serif JP";
-  font-size: 1.2rem;
+  font-size: 1rem;
   transition: all 1s ease;
 }
 .firstVisit {
@@ -53,11 +70,13 @@ form {
 input {
   text-align: center;
   flex: 3 1 auto;
-  padding: 1rem;
+  padding: 1em;
   border: none;
   font-family: "Montserrat", "Noto Serif JP";
   font-size: 1em;
   min-width: 0;
+  border: 1px solid #333;
+  border-right: none;
 }
 button {
   flex: 1 0 auto;
@@ -70,12 +89,15 @@ button {
   color: #eee;
   font-size: 1em;
   min-width: 0;
+  cursor: pointer;
+}
+svg {
+  vertical-align: bottom;
 }
 
 :is(input, button):active,
 :is(input, button):focus {
   outline: none;
-  border: none;
 }
 
 .ripple {

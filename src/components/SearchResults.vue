@@ -39,7 +39,17 @@ export default {
         x.classList.remove("active");
       });
 
-      e.target.classList.add("active");
+      e.currentTarget.classList.add("active");
+
+      let el = e.currentTarget;
+
+      setTimeout(() => {
+        el.scrollIntoView({
+          block: "center",
+          behavior: "smooth",
+          inline: "center",
+        });
+      }, 400);
     },
 
     customScroll(e) {
@@ -68,7 +78,7 @@ export default {
   position: relative;
 }
 #hits-wrapper::after {
-  content: "";
+  /* content: ""; */
   width: 5%;
   height: 100%;
   position: absolute;
@@ -78,7 +88,7 @@ export default {
   pointer-events: none;
 }
 #hits-wrapper::before {
-  content: "";
+  /* content: ""; */
   width: 5%;
   height: 100%;
   position: absolute;
@@ -96,7 +106,7 @@ export default {
   list-style: none;
   align-content: space-around;
   gap: 1rem;
-  margin: 1rem;
+  margin: 1rem 0rem;
 }
 
 #hits-container::-webkit-scrollbar {
@@ -115,8 +125,10 @@ export default {
   display: flex;
   position: relative;
   align-items: flex-end;
-  font-size: 1.2rem;
-  padding: 1rem;
+  justify-content: center;
+  flex: 1 0 auto;
+  font-size: 1em;
+  padding: 0.5rem 1rem;
   color: #333;
   background-color: #fff;
   border: 1px solid #333;
@@ -124,6 +136,8 @@ export default {
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 0px;
+  user-select: none;
 }
 
 .hits:hover,
@@ -134,6 +148,7 @@ export default {
 .hits.active {
   color: #eee;
   background-color: #333;
+  min-width: 80%;
 }
 
 .yomi {

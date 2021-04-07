@@ -3,24 +3,32 @@
     <SearchBar v-on:search="fetchData($event)" />
     <SearchResults :prop="results" @fetch-definition="fetchDefinition" />
 
-    <section id="results">
+    <section id="results" v-if="engRes || japRes">
       <section id="japRes">
         <div class="loader" v-if="searchingJap"></div>
-        <h2 v-if="japRes">日本語</h2>
-        <article v-if="japRes">
-          {{ japRes }}
+        <article v-if="japRes" class="definition">
+          {{ japRes.def }}
+          <ul id="links-list">
+            <li
+              class="link"
+              v-for="(entry, index) in japRes.links"
+              :key="index"
+              @click="fetchData(entry.match(/【(.*)】/, '')[1])"
+            >
+              {{ entry }}
+            </li>
+          </ul>
         </article>
       </section>
 
       <section id="engRes">
         <div class="loader" v-if="searchingEng"></div>
-        <h2 v-if="engRes">English</h2>
 
         <article v-if="engRes" class="definition" v-html="engRes"></article>
       </section>
     </section>
     <div id="credits">
-      <svg
+      <!-- <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="14.048748779296886 -17.088763427734378 471.9025024414062 184.17752685546876"
         preserveAspectRatio="xMidYMid"
@@ -31,7 +39,7 @@
             fill="#333"
           ></path>
         </g>
-      </svg>
+      </svg> -->
       <a href="https://github.com/NPetz">made w/ 💖 by NPetz</a>
     </div>
   </main>
@@ -43,6 +51,9 @@ import SearchResults from "./components/SearchResults.vue";
 
 import * as firebase from "firebase/app";
 import "firebase/analytics";
+import _ from "lodash";
+
+console.log(_.VERSION);
 
 const firebaseConfig = {
   apiKey: "AIzaSyCrYzr1CQ1RYaxeGf5Vu3FLW3WZxlwg-0E",
@@ -56,8 +67,6 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
-console.log(process.env);
 
 const parser = new DOMParser();
 
@@ -80,12 +89,6 @@ export default {
     };
   },
 
-  computed: {
-    api: () => "AIzaSyCrYzr1CQ1RYaxeGf5Vu3FLW3WZxlwg-0E",
-
-    cx: () => "partner-pub-8353708690493468:1896422876",
-  },
-
   methods: {
     async fetchData(input) {
       const url = encodeURIComponent(
@@ -96,10 +99,12 @@ export default {
         this.currentKeyword = input;
         const response = await fetch(uri);
         const data = await response.json();
+
         const status = data.status.http_code;
-        console.log(data);
         if (status === 200) {
           const words = JSON.parse(data.contents).words;
+
+          console.log("jap raw data", words);
           this.results = words;
         } else {
           console.log("bad request");
@@ -108,46 +113,31 @@ export default {
         console.log("search term empty or same as before");
       }
     },
+    fetchDefinition(e) {
+      if (e !== this.currentSearch) {
+        this.currentSearch = e;
 
-    async fetchDefinition(e) {
-      console.log(e);
-      this.japRes = e.text.replace(/\[([^\]]+)\]/g, "");
-      this.fetchEng(e.heading.match(/【(.*)】/)[1]);
-
-      // Promise.all([this.fetchJap(e.link), this.fetchEng(e.title)]);
+        this.japRes = this.parseJap(e.text);
+        this.fetchEng(e.heading.match(/【(.*)】/)[1]);
+      } else {
+        console.log("same search");
+      }
     },
 
-    async fetchJap(url) {
-      this.searchingJap = true;
-      this.japRes = null;
+    parseJap(text) {
+      // remove parts in suqre brackets
+      text = text.replace(/\[([^\]]+)\]/g, "");
+      // split at ⇒
+      let [def, ...links] = text.split("⇒");
 
-      const response = await fetch(
-        `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-      );
-      const data = await response.json();
-      let htmlData = parser
-        .parseFromString(data.contents, "text/html")
-        .getElementById("mainArea")
-        .querySelectorAll("article .description");
-
-      htmlData.forEach((x) => {
-        x.querySelectorAll("a").forEach((x) => {
-          let y = (document.createElement("span").innerText = x.innerText);
-          x.replaceWith(y);
-        });
-        x.querySelectorAll("img").forEach((x) => {
-          x.remove();
-        });
-      });
-      this.japRes = htmlData ? htmlData : "No Results";
-      this.searchingJap = false;
+      return { def, links };
     },
 
     async fetchEng(term) {
       this.searchingEng = true;
       this.engRes = null;
 
-      const uri = `http://nihongo.monash.edu/cgi-bin/wwwjdic?1MUJ${encodeURIComponent(
+      const uri = `https://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic?1ZUJ${encodeURIComponent(
         term
       )}`;
       const response = await fetch(
@@ -155,31 +145,22 @@ export default {
       );
       const data = await response.json();
 
+      console.log("eng raw data", data);
+
       const htmlData = parser
         .parseFromString(data.contents, "text/html")
-        .querySelectorAll("div[style='clear: both;']");
+        .querySelector("pre");
 
-      let htmlRes = htmlData[0] ?? null;
+      let htmlRes = htmlData.innerText.split("\n")[0] ?? null;
+
+      htmlRes = htmlRes.replace(/\//g, " ");
 
       if (htmlRes) {
-        htmlRes.querySelectorAll("div > input").forEach((x) => {
-          x.remove();
-        });
-        htmlRes.querySelectorAll("a").forEach((x) => {
-          if (x.innerText == "[Links]") {
-            x.remove();
-          } else {
-            let y = (document.createElement("span").innerText = x.innerText);
-            x.replaceWith(y);
-          }
-        });
-
-        this.engRes = htmlRes.innerHTML;
+        this.searchingEng = false;
+        this.engRes = htmlRes;
       } else {
         this.engRes = "No Results";
       }
-
-      this.searchingEng = false;
     },
   },
 };
@@ -195,29 +176,95 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+html,
+body {
+  min-height: 100vh;
+  position: relative;
+}
 body {
   background-color: #eee;
-  min-height: 100vh;
-  max-width: 100vw;
   font-family: "Montserrat", "Noto Serif JP";
   padding: 1rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+main {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 50px;
+  flex-grow: 1;
+}
+
+/* results */
+
+#results {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  margin: 1rem;
+}
+#japRes,
+#engRes {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  padding: 1rem;
+  justify-content: center;
+}
+
+.definition {
+  word-break: break-word;
+  white-space: pre-line;
+  font-size: 1.3em;
+}
+/* japRes */
+
+#links-list {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  list-style: none;
+  font-size: 0.8em;
+  margin-top: 1em;
+  gap: 1rem;
+}
+#links-list::-webkit-scrollbar {
+  height: 10px;
+  background-color: #eee;
+  display: none;
+}
+.link {
+  background-color: #333;
+  border: 1px solid #333;
+  color: #eee;
+  white-space: nowrap;
+  padding: 0.1rem 0.5rem;
+  transition: all 0.2;
+  cursor: pointer;
+  user-select: none;
+}
+.link:hover {
+  background-color: #eee;
+  color: #333;
 }
 
 /* credits */
 
 #credits {
   position: absolute;
-  left: 20px;
-  bottom: 20px;
-  width: 100px;
-  font-size: 9px;
+  right: 50%;
+  bottom: 10px;
+  font-size: 0.6rem;
+  transform: translateX(50%);
 }
 #credits a {
   text-decoration: none;
   color: #333;
 }
-
+#credits svg {
+  margin-bottom: -0.8rem;
+}
 /* loader */
 
 .loader {
