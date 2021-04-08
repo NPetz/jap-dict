@@ -1,34 +1,43 @@
 <template>
   <main>
-    <SearchBar v-on:search="fetchData($event)" />
-    <SearchResults :prop="results" @fetch-definition="fetchDefinition" />
+    <SearchBar @search="fetchOptions($event)" />
+    <SearchResults
+      :prop="{ results, fetchingOptions }"
+      @fetch-definition="fetchDefinition"
+    />
 
     <section id="results" v-if="engRes || japRes">
       <section id="japRes">
         <div class="loader" v-if="searchingJap"></div>
-        <article v-if="japRes" class="definition">
-          {{ japRes.def }}
-          <ul id="links-list">
-            <li
-              class="link"
-              v-for="(entry, index) in japRes.links"
-              :key="index"
-              @click="fetchData(entry.match(/【(.*)】/, '')[1])"
-            >
-              {{ entry }}
-            </li>
-          </ul>
+        <article class="resultWrapper" v-if="japRes">
+          <h2 class="languageLabel">日本語</h2>
+          <div class="definition">
+            {{ japRes.def }}
+            <ul id="links-list">
+              <li
+                class="link"
+                v-for="(entry, index) in japRes.links"
+                :key="index"
+                @click="fetchOptions(entry.match(/【(.*)】/, '')[1])"
+              >
+                {{ entry }}
+              </li>
+            </ul>
+          </div>
         </article>
       </section>
 
       <section id="engRes">
         <div class="loader" v-if="searchingEng"></div>
 
-        <article v-if="engRes" class="definition" v-html="engRes"></article>
+        <article v-if="engRes" class="resultWrapper">
+          <h2 class="languageLabel">English</h2>
+          <div class="definition" v-html="engRes"></div>
+        </article>
       </section>
     </section>
     <div id="credits">
-      <!-- <svg
+      <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="14.048748779296886 -17.088763427734378 471.9025024414062 184.17752685546876"
         preserveAspectRatio="xMidYMid"
@@ -39,7 +48,7 @@
             fill="#333"
           ></path>
         </g>
-      </svg> -->
+      </svg>
       <a href="https://github.com/NPetz">made w/ 💖 by NPetz</a>
     </div>
   </main>
@@ -51,9 +60,6 @@ import SearchResults from "./components/SearchResults.vue";
 
 import * as firebase from "firebase/app";
 import "firebase/analytics";
-import _ from "lodash";
-
-console.log(_.VERSION);
 
 const firebaseConfig = {
   apiKey: "AIzaSyCrYzr1CQ1RYaxeGf5Vu3FLW3WZxlwg-0E",
@@ -82,6 +88,7 @@ export default {
       results: false,
       japRes: false,
       engRes: false,
+      fetchingOptions: null,
       searchingJap: false,
       searchingEng: false,
       currentKeyword: null,
@@ -90,29 +97,31 @@ export default {
   },
 
   methods: {
-    async fetchData(input) {
+    async fetchOptions(input) {
       const url = encodeURIComponent(
         ` https://sakura-paris.org/dict/?api=1&q=${input}&dict=広辞苑&max=10`
       );
       const uri = `https://api.allorigins.win/get?url=${url}`;
       if (input.length > 0 && input !== this.currentKeyword) {
+        this.fetchingOptions = true;
         this.currentKeyword = input;
         const response = await fetch(uri);
         const data = await response.json();
-
+        this.fetchingOptions = false;
         const status = data.status.http_code;
         if (status === 200) {
           const words = JSON.parse(data.contents).words;
-
-          console.log("jap raw data", words);
-          this.results = words;
+          this.results = words ?? null;
         } else {
+          // TODO if not 200 display try again in search results
           console.log("bad request");
         }
       } else {
+        // TODO if same search term or empty shake and higlinght search results
         console.log("search term empty or same as before");
       }
     },
+
     fetchDefinition(e) {
       if (e !== this.currentSearch) {
         this.currentSearch = e;
@@ -120,11 +129,13 @@ export default {
         this.japRes = this.parseJap(e.text);
         this.fetchEng(e.heading.match(/【(.*)】/)[1]);
       } else {
+        // TODO if same search shake hits and highlihg tresults
         console.log("same search");
       }
     },
 
     parseJap(text) {
+      // TODO better parsing
       // remove parts in suqre brackets
       text = text.replace(/\[([^\]]+)\]/g, "");
       // split at ⇒
@@ -178,22 +189,25 @@ export default {
 }
 html,
 body {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   position: relative;
 }
 body {
   background-color: #eee;
   font-family: "Montserrat", "Noto Serif JP";
   padding: 1rem;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
 main {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
   margin-bottom: 50px;
   flex-grow: 1;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* results */
@@ -201,22 +215,48 @@ main {
 #results {
   display: flex;
   flex-grow: 1;
-  flex-direction: column;
-  margin: 1rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  gap: 1rem;
+}
+#results::-webkit-scrollbar {
+  height: 10px;
+  background-color: #eee;
+  display: none;
 }
 #japRes,
 #engRes {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
-  padding: 1rem;
   justify-content: center;
+  max-width: 100%;
+}
+
+.resultWrapper {
+  border: 1px solid #333;
+}
+
+.languageLabel {
+  display: flex;
+  align-items: center;
+  background-color: #333;
+  color: #eee;
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  height: 3rem;
 }
 
 .definition {
   word-break: break-word;
   white-space: pre-line;
   font-size: 1.3em;
+  padding: 3rem;
+  max-width: 600px;
 }
 /* japRes */
 
@@ -228,6 +268,12 @@ main {
   font-size: 0.8em;
   margin-top: 1em;
   gap: 1rem;
+  background: linear-gradient(
+    180deg,
+    transparent calc(50% - 1px),
+    #333 calc(50%),
+    transparent calc(50% + 1px)
+  );
 }
 #links-list::-webkit-scrollbar {
   height: 10px;

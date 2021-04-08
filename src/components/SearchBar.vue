@@ -39,11 +39,12 @@ export default {
       let val = e.target[0].value;
       if (val.length > 0) {
         this.firstTime = false;
-        // remove active
-        let hits = document.querySelectorAll(".active");
-        hits.forEach((x) => {
-          x.classList.remove("active");
-        });
+        // remove
+        // TODO this should be in the main app
+        // let hits = document.querySelectorAll(".active");
+        // hits.forEach((x) => {
+        //   x.classList.remove("active");
+        // });
       } else {
         this.shake = true;
         setTimeout(() => (this.shake = false), 820);

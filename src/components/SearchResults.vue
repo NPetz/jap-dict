@@ -1,9 +1,16 @@
 <template>
   <div id="hits-wrapper">
     <transition name="fadeIn">
-      <ul id="hits-container" v-if="prop" @mousemove="customScroll">
+      <ul
+        id="hits-container"
+        @mousemove="customScroll"
+        v-if="prop.results !== false"
+      >
+        <li class="hits noResults" v-if="prop.results === null">
+          <p>NO RESULTS</p>
+        </li>
         <li
-          v-for="(entry, index) in prop"
+          v-for="(entry, index) in prop.results"
           :key="index"
           class="hits"
           @click="
@@ -24,8 +31,8 @@
 export default {
   name: "SearchResults",
   props: ["prop"],
-  data: () => ({}),
   methods: {
+    // TODO tweak this one to be more universal
     parseResults(text) {
       const afterParenthesis = /\[.*/;
       text = text.replace(afterParenthesis, "");
@@ -52,6 +59,7 @@ export default {
       }, 400);
     },
 
+    // TODO make this work on simple hover
     customScroll(e) {
       let el = e.currentTarget;
       let x = e.clientX - 16;
@@ -106,7 +114,13 @@ export default {
   list-style: none;
   align-content: space-around;
   gap: 1rem;
-  margin: 1rem 0rem;
+  background: linear-gradient(
+    180deg,
+    transparent calc(50% - 1px),
+    #333 calc(50%),
+    transparent calc(50% + 1px)
+  );
+  /* margin: 1rem 0rem; */
 }
 
 #hits-container::-webkit-scrollbar {
