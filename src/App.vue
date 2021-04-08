@@ -1,10 +1,12 @@
 <template>
   <main>
-    <SearchBar @search="fetchOptions($event)" />
-    <SearchResults
-      :prop="{ results, fetchingOptions }"
-      @fetch-definition="fetchDefinition"
-    />
+    <header id="searchArea">
+      <SearchBar @search="fetchOptions($event)" />
+      <SearchResults
+        :prop="{ results, fetchingOptions }"
+        @fetch-definition="fetchDefinition"
+      />
+    </header>
 
     <section id="results" v-if="engRes || japRes">
       <section id="japRes">
@@ -13,7 +15,21 @@
           <h2 class="languageLabel">日本語</h2>
           <div class="definition">
             {{ japRes.def }}
-            <ul id="links-list">
+            <ul
+              id="links-list"
+              @mouseenter="scrollEnter"
+              @mouseleave="scrollLeave"
+              @mousemove="
+                (e) => {
+                  if (!throttling) {
+                    mousePosition = e.clientX;
+                  } else {
+                    throttling = true;
+                    setTimeout(() => (throttling = false), 300);
+                  }
+                }
+              "
+            >
               <li
                 class="link"
                 v-for="(entry, index) in japRes.links"
@@ -28,11 +44,10 @@
       </section>
 
       <section id="engRes">
-        <div class="loader" v-if="searchingEng"></div>
-
-        <article v-if="engRes" class="resultWrapper">
+        <article v-if="engRes || searchingEng" class="resultWrapper">
           <h2 class="languageLabel">English</h2>
-          <div class="definition" v-html="engRes"></div>
+          <div class="loader" v-if="searchingEng"></div>
+          <div class="definition" v-if="engRes" v-html="engRes"></div>
         </article>
       </section>
     </section>
@@ -93,6 +108,9 @@ export default {
       searchingEng: false,
       currentKeyword: null,
       currentSearch: null,
+      scrollInterval: null,
+      mousePosition: null,
+      throttling: false,
     };
   },
 
@@ -139,7 +157,7 @@ export default {
       // remove parts in suqre brackets
       text = text.replace(/\[([^\]]+)\]/g, "");
       // split at ⇒
-      let [def, ...links] = text.split("⇒");
+      let [def, ...links] = text.split(/[⇒→]/);
 
       return { def, links };
     },
@@ -173,6 +191,21 @@ export default {
         this.engRes = "No Results";
       }
     },
+    scrollEnter(e) {
+      let target = e.currentTarget;
+      let width = e.currentTarget.offsetWidth;
+      let { left: leftCoord } = target.getBoundingClientRect();
+      this.scrollInterval = setInterval(() => {
+        if (this.mousePosition < leftCoord + width * 0.15) {
+          target.scrollLeft -= 25;
+        } else if (this.mousePosition > leftCoord + width - width * 0.15) {
+          target.scrollLeft += 25;
+        }
+      }, 50);
+    },
+    scrollLeave() {
+      clearInterval(this.scrollInterval);
+    },
   },
 };
 </script>
@@ -196,23 +229,30 @@ body {
 body {
   background-color: #eee;
   font-family: "Montserrat", "Noto Serif JP";
-  padding: 1rem;
   display: flex;
   flex-direction: column;
 }
 main {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
   margin-bottom: 50px;
   flex-grow: 1;
   height: 100vh;
   overflow: hidden;
 }
+/* search Area */
+
+#searchArea {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
 
 /* results */
 
 #results {
+  padding: 1rem;
   display: flex;
   flex-grow: 1;
   flex-direction: row;
@@ -239,10 +279,15 @@ main {
 
 .resultWrapper {
   border: 1px solid #333;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .languageLabel {
   display: flex;
+  width: 100%;
   align-items: center;
   background-color: #333;
   color: #eee;
@@ -256,6 +301,7 @@ main {
   white-space: pre-line;
   font-size: 1.3em;
   padding: 3rem;
+  width: 100%;
   max-width: 600px;
 }
 /* japRes */
@@ -286,13 +332,15 @@ main {
   color: #eee;
   white-space: nowrap;
   padding: 0.1rem 0.5rem;
-  transition: all 0.2;
+  transition: all 0.2s;
   cursor: pointer;
   user-select: none;
+  margin: 0 auto;
 }
 .link:hover {
-  background-color: #eee;
+  background-color: #fff;
   color: #333;
+  border-color: #333;
 }
 
 /* credits */
@@ -315,7 +363,7 @@ main {
 
 .loader {
   font-size: 10px;
-  margin: 50px auto;
+  margin: 3rem;
   text-indent: -9999em;
   width: 11em;
   height: 11em;
@@ -348,7 +396,7 @@ main {
   content: "";
 }
 .loader:after {
-  background: #eeeeee;
+  background: #fff;
   width: 75%;
   height: 75%;
   border-radius: 50%;

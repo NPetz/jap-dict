@@ -3,7 +3,18 @@
     <transition name="fadeIn">
       <ul
         id="hits-container"
-        @mousemove="customScroll"
+        @mouseenter="scrollEnter"
+        @mouseleave="scrollLeave"
+        @mousemove="
+          (e) => {
+            if (!throttling) {
+              mousePosition = e.x;
+            } else {
+              throttling = true;
+              setTimeout(() => (throttling = false), 300);
+            }
+          }
+        "
         v-if="prop.results !== false"
       >
         <li class="hits noResults" v-if="prop.results === null">
@@ -31,6 +42,11 @@
 export default {
   name: "SearchResults",
   props: ["prop"],
+  data: () => ({
+    scrollInterval: null,
+    mousePosition: null,
+    throttling: false,
+  }),
   methods: {
     // TODO tweak this one to be more universal
     parseResults(text) {
@@ -58,24 +74,21 @@ export default {
         });
       }, 400);
     },
-
-    // TODO make this work on simple hover
-    customScroll(e) {
-      let el = e.currentTarget;
-      let x = e.clientX - 16;
-      let totalWidth = el.scrollWidth;
-      let scroll = el.scrollLeft;
-      let width = el.offsetWidth;
-
-      let scrollDirection = x > width / 2 ? "right" : "left";
-      let magnitude =
-        Math.abs(width / 2 - x) > width * 0.4 ? totalWidth * 0.01 : 0;
-
-      if (scrollDirection === "right") {
-        el.scrollLeft = scroll <= totalWidth ? scroll + magnitude : totalWidth;
-      } else {
-        el.scrollLeft = scroll >= 0 ? scroll - magnitude : 0;
-      }
+    scrollEnter(e) {
+      let target = e.currentTarget;
+      this.scrollInterval = setInterval(() => {
+        if (this.mousePosition < window.innerWidth * 0.15) {
+          target.scrollLeft -= 25;
+        } else if (
+          this.mousePosition >
+          window.innerWidth - window.innerWidth * 0.15
+        ) {
+          target.scrollLeft += 25;
+        }
+      }, 50);
+    },
+    scrollLeave() {
+      clearInterval(this.scrollInterval);
     },
   },
 };
