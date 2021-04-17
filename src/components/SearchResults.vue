@@ -47,6 +47,16 @@ export default {
     mousePosition: null,
     throttling: false,
   }),
+  watch: {
+    prop(newV, oldV) {
+      if (oldV.fetchingOptions && !newV.fetchingOptions && newV.results) {
+        setTimeout(() => {
+          let hits = document.querySelector(".hits");
+          hits.click();
+        }, 800);
+      }
+    },
+  },
   methods: {
     // TODO tweak this one to be more universal
     parseResults(text) {
