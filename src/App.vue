@@ -101,6 +101,15 @@ const parser = new DOMParser();
 
 export default {
   name: "App",
+  metaInfo: {
+    title: "Koe",
+    meta: [
+      { charset: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { httpEquiv: "X-UA-Compatible", content: "IE=edge,chrome=1" },
+      { name: "HandheldFriendly", content: "true" },
+    ],
+  },
   components: {
     SearchBar,
     SearchResults,
