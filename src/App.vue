@@ -197,9 +197,17 @@ export default {
         .parseFromString(data.contents, "text/html")
         .querySelector("pre");
 
-      let htmlRes = htmlData.innerText.split("\n")[0] ?? null;
+      let htmlRes = htmlData?.innerText.split("\n")[0] ?? null;
 
-      htmlRes = htmlRes.replace(/\//g, " ");
+      console.log(htmlRes);
+
+      htmlRes = htmlRes
+        .replace(/\//, " ")
+        .replace(/\/$/, "")
+        .replace(/(?<=\w)(\/)(?=\w)/g, ", ")
+        .replace(/\/\(P\)/, "")
+        .replace(/]/, "$&\n")
+        .replace(/\/(\()/g, "\n$1");
 
       if (htmlRes) {
         this.searchingEng = false;
