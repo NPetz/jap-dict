@@ -4,11 +4,8 @@
 <template>
   <form
     id="form"
-    v-bind:class="{ firstVisit: firstTime, shake: shake }"
-    v-on:submit.prevent="
-      onSubmit($event);
-      $emit('search', $event.target[0].value);
-    "
+    v-bind:class="{ firstVisit: firstTime, shake: error }"
+    v-on:submit.prevent="onSubmit($event)"
   >
     <input type="text" placeholder="lookup a japanese word" id="input" />
     <button class="ripple" type="submit">
@@ -33,22 +30,23 @@
 <script>
 export default {
   name: "SearchBar",
-  data: () => ({ firstTime: true, shake: false }),
+  data: () => ({
+    firstTime: true,
+    error: false,
+  }),
   methods: {
     onSubmit(e) {
       let val = e.target[0].value;
       if (val.length > 0) {
         this.firstTime = false;
-        // remove
-        // TODO this should be in the main app
-        // let hits = document.querySelectorAll(".active");
-        // hits.forEach((x) => {
-        //   x.classList.remove("active");
-        // });
+        this.$emit("search", val);
       } else {
-        this.shake = true;
-        setTimeout(() => (this.shake = false), 820);
+        this.shake();
       }
+    },
+    shake() {
+      this.error = true;
+      setTimeout(() => (this.error = false), 820);
     },
   },
 };

@@ -2,8 +2,8 @@
   <main>
     <header id="searchArea">
       <SearchBar @search="fetchOptions($event)" />
-      <SearchResults
-        :prop="{ results, fetchingOptions }"
+      <SearchOptions
+        :prop="{ options, fetchingOptions, error: optionsError }"
         @fetch-definition="fetchDefinition"
       />
     </header>
@@ -79,7 +79,7 @@
 
 <script>
 import SearchBar from "./components/SearchBar.vue";
-import SearchResults from "./components/SearchResults.vue";
+import SearchOptions from "./components/SearchOptions.vue";
 
 import * as firebase from "firebase/app";
 import "firebase/analytics";
@@ -100,9 +100,10 @@ firebase.initializeApp(firebaseConfig);
 const parser = new DOMParser();
 
 export default {
-  name: "App",
+  name: "Koe",
   metaInfo: {
     title: "Koe",
+    link: [{ rel: "favicon", href: "favicon.svg" }],
     meta: [
       { charset: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -112,16 +113,20 @@ export default {
   },
   components: {
     SearchBar,
-    SearchResults,
+    SearchOptions,
   },
 
-  data: function () {
+  data: () => {
     return {
-      results: false,
+      options: false,
       japRes: false,
       engRes: false,
       fetchingOptions: null,
+      optionsError: false,
       searchingJap: false,
+      errorJap: false,
+      errorEng: false,
+
       searchingEng: false,
       currentKeyword: null,
       currentSearch: null,
@@ -133,27 +138,30 @@ export default {
 
   methods: {
     async fetchOptions(input) {
-      const url = encodeURIComponent(
+      // case search is same as current and there are no errors
+      if (input === this.currentKeyword && !this.optionsError) {
+        // highligth current search
+        return;
+      }
+      const japApiUrl = encodeURIComponent(
         ` https://sakura-paris.org/dict/?api=1&q=${input}&dict=広辞苑&max=10`
       );
-      const uri = `https://api.allorigins.win/get?url=${url}`;
-      if (input.length > 0 && input !== this.currentKeyword) {
-        this.fetchingOptions = true;
-        this.currentKeyword = input;
-        const response = await fetch(uri);
+      const proxyUrl = `https://api.allorigins.win/get?url=${japApiUrl}`;
+
+      this.fetchingOptions = true;
+      this.options = "";
+      this.currentKeyword = input;
+      try {
+        const response = await fetch(proxyUrl);
         const data = await response.json();
         this.fetchingOptions = false;
-        const status = data.status.http_code;
-        if (status === 200) {
-          const words = JSON.parse(data.contents).words;
-          this.results = words ?? null;
-        } else {
-          // TODO if not 200 display try again in search results
-          console.log("bad request");
-        }
-      } else {
-        // TODO if same search term or empty shake and higlinght search results
-        console.log("search term empty or same as before");
+        this.optionsError = false;
+        const words = JSON.parse(data.contents).words;
+        this.options = words ?? null;
+      } catch (error) {
+        this.optionsError = true;
+        // TODO if not 200 display try again in search results
+        console.log(error);
       }
     },
 

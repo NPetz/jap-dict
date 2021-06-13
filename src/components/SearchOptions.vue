@@ -1,7 +1,7 @@
 <template>
   <div id="hits-wrapper">
-    <transition name="fadeIn">
-      <ul
+    <transition name="fadeIn" mode="out-in">
+      <div
         id="hits-container"
         @mouseenter="scrollEnter"
         @mouseleave="scrollLeave"
@@ -15,32 +15,42 @@
             }
           }
         "
-        v-if="prop.results !== false"
       >
-        <li class="hits noResults" v-if="prop.results === null">
-          <p>NO RESULTS</p>
-        </li>
-        <li
-          v-for="(entry, index) in prop.results"
-          :key="index"
-          class="hits"
-          @click="
-            $emit('fetch-definition', entry);
-            toggleActive($event);
-          "
-        >
-          <p class="kanji">
-            {{ parseResults(entry.heading) }}
-          </p>
-        </li>
-      </ul>
+        <transition name="fadeIn" mode="out-in">
+          <ul v-if="prop.options">
+            <li
+              v-for="(entry, index) in prop.options"
+              :key="index"
+              class="hits"
+              @click="
+                $emit('fetch-definition', entry);
+                toggleActive($event);
+              "
+            >
+              <p class="kanji">
+                {{ parseResults(entry.heading) }}
+              </p>
+            </li>
+          </ul>
+          <ul v-if="prop.options === null">
+            <li class="hits errorHit">
+              <p>NO RESULTS</p>
+            </li>
+          </ul>
+          <ul v-if="prop.error">
+            <li class="hits errorHit">
+              <p>ERROR - TRY AGAIN</p>
+            </li>
+          </ul>
+        </transition>
+      </div>
     </transition>
   </div>
 </template>
 
 <script>
 export default {
-  name: "SearchResults",
+  name: "SearchOptions",
   props: ["prop"],
   data: () => ({
     scrollInterval: null,
@@ -49,11 +59,16 @@ export default {
   }),
   watch: {
     prop(newV, oldV) {
-      if (oldV.fetchingOptions && !newV.fetchingOptions && newV.results) {
+      if (
+        oldV.fetchingOptions &&
+        !newV.fetchingOptions &&
+        newV.options &&
+        !newV.error
+      ) {
         setTimeout(() => {
           let hits = document.querySelector(".hits");
           hits.click();
-        }, 800);
+        }, 1000);
       }
     },
   },
@@ -131,7 +146,13 @@ export default {
 }
 
 #hits-container {
+  width: 100%;
+  min-height: 50px;
+}
+
+#hits-container ul {
   display: flex;
+
   overflow-x: auto;
   flex-wrap: nowrap;
   list-style: none;
@@ -143,25 +164,24 @@ export default {
     #333 calc(50%),
     transparent calc(50% + 1px)
   );
-  /* margin: 1rem 0rem; */
 }
 
-#hits-container::-webkit-scrollbar {
+#hits-container ul::-webkit-scrollbar {
   height: 10px;
   background-color: #eee;
   display: none;
 }
-#hits-container::-webkit-scrollbar-track {
+#hits-container ul::-webkit-scrollbar-track {
   background-color: #aaa;
 }
-#hits-container::-webkit-scrollbar-thumb {
+#hits-container ul::-webkit-scrollbar-thumb {
   background-color: #333;
 }
 
 .hits {
   display: flex;
   position: relative;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   flex: 1 0 auto;
   font-size: 1em;
@@ -169,19 +189,36 @@ export default {
   color: #333;
   background-color: #fff;
   border: 1px solid #333;
-  border-bottom: 3px solid #333;
+  /* border-bottom: 3px solid #333; */
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
   min-width: 0px;
+  min-height: 50px;
   user-select: none;
 }
 
-.hits:hover,
-.hits.active {
-  color: #eee;
-  background-color: #333;
+.errorHit {
+  cursor: auto;
 }
+
+.hits::after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  height: 3px;
+  bottom: 0;
+  left: 0;
+  background: #333;
+  transition: transform 0.3s;
+  transform: scaleX(0);
+  transform-origin: right;
+}
+.hits:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
 .hits.active {
   color: #eee;
   background-color: #333;
