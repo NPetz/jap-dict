@@ -2,8 +2,10 @@
   <main>
     <header id="searchArea">
       <SearchBar @search="fetchOptions($event)" />
-      <SearchOptions
-        :prop="{ options, fetchingOptions, error: optionsError }"
+      <OptionsBar
+        :options="options"
+        :fetching="fetchingOptions"
+        :error="optionsError"
         @fetch-definition="fetchDefinition"
       />
     </header>
@@ -52,26 +54,24 @@
       </section>
     </section>
     <div id="credits">
-      <svg
-        width="42.856"
-        height="16.544"
-        viewBox="0 0 42.856 16.544"
-        xmlns="http://www.w3.org/2000/svg"
-        id="logotype"
-      >
+      <svg viewBox="0 0 92.9 95.5">
         <g
+          id="SvgjsG1000"
           stroke-linecap="round"
           fill-rule="evenodd"
           font-size="9pt"
+          stroke="#333"
           fill="#333"
-          style="fill: #333"
+          stroke-width="0.25mm"
+          style="stroke: #333; stroke-width: 0"
         >
           <path
-            d="M 8.69 16.324 L 5.764 12.628 L 4.972 13.486 L 4.972 16.324 L 0 16.324 L 0 0 L 4.972 0 L 4.972 7.788 L 8.426 4.29 L 14.3 4.29 L 9.328 9.504 L 14.696 16.324 L 8.69 16.324 Z M 42.79 11.462 L 34.43 11.462 Q 34.694 12.144 35.31 12.507 A 2.486 2.486 0 0 0 36.027 12.785 Q 36.332 12.854 36.685 12.867 A 4.496 4.496 0 0 0 36.85 12.87 A 5.283 5.283 0 0 0 37.408 12.842 Q 37.681 12.813 37.914 12.754 A 2.686 2.686 0 0 0 38.181 12.672 Q 38.61 12.514 39.102 12.176 A 6.926 6.926 0 0 0 39.358 11.99 L 41.954 14.608 A 5.574 5.574 0 0 1 39.381 16.187 Q 38.495 16.455 37.427 16.522 A 11.672 11.672 0 0 1 36.696 16.544 A 10.055 10.055 0 0 1 34.77 16.368 A 7.688 7.688 0 0 1 32.868 15.741 A 6.449 6.449 0 0 1 31.172 14.566 A 5.774 5.774 0 0 1 30.316 13.508 Q 29.414 12.078 29.414 10.296 A 6.236 6.236 0 0 1 29.753 8.216 A 5.683 5.683 0 0 1 30.305 7.073 Q 31.196 5.654 32.747 4.862 A 7.279 7.279 0 0 1 35.405 4.108 A 8.892 8.892 0 0 1 36.234 4.07 A 7.965 7.965 0 0 1 38.468 4.375 A 7.086 7.086 0 0 1 39.567 4.796 Q 41.074 5.522 41.965 6.93 Q 42.856 8.338 42.856 10.296 Q 42.856 10.406 42.79 11.462 Z M 19.371 16.29 A 8.576 8.576 0 0 0 21.494 16.544 A 9.37 9.37 0 0 0 22.599 16.48 A 7.513 7.513 0 0 0 25.113 15.741 A 7.225 7.225 0 0 0 25.31 15.638 A 6.053 6.053 0 0 0 27.599 13.519 A 5.683 5.683 0 0 0 28.151 12.376 A 6.236 6.236 0 0 0 28.49 10.296 A 7.095 7.095 0 0 0 28.482 9.961 A 5.854 5.854 0 0 0 27.599 7.073 A 5.858 5.858 0 0 0 26.973 6.247 A 6.216 6.216 0 0 0 25.113 4.862 A 7.309 7.309 0 0 0 23.523 4.294 A 8.877 8.877 0 0 0 21.494 4.07 Q 19.492 4.07 17.897 4.862 A 7.227 7.227 0 0 0 17.798 4.912 A 6.079 6.079 0 0 0 15.4 7.073 A 5.655 5.655 0 0 0 14.85 8.191 A 6.159 6.159 0 0 0 14.498 10.296 Q 14.498 12.1 15.4 13.519 A 6.008 6.008 0 0 0 15.997 14.307 A 6.358 6.358 0 0 0 17.897 15.741 A 7.241 7.241 0 0 0 19.371 16.29 Z M 21.494 12.672 A 1.912 1.912 0 0 0 22.242 12.53 A 1.803 1.803 0 0 0 22.902 12.045 A 2.079 2.079 0 0 0 23.33 11.243 Q 23.452 10.824 23.452 10.296 A 3.679 3.679 0 0 0 23.393 9.614 Q 23.272 8.972 22.902 8.558 A 1.787 1.787 0 0 0 21.6 7.944 A 2.313 2.313 0 0 0 21.494 7.942 A 1.947 1.947 0 0 0 20.757 8.077 A 1.799 1.799 0 0 0 20.086 8.558 A 2.018 2.018 0 0 0 19.665 9.328 Q 19.572 9.633 19.546 10 A 4.177 4.177 0 0 0 19.536 10.296 A 3.699 3.699 0 0 0 19.595 10.979 Q 19.716 11.624 20.086 12.045 Q 20.636 12.672 21.494 12.672 Z M 34.342 9.064 L 38.214 9.064 A 2.363 2.363 0 0 0 38.012 8.471 A 1.853 1.853 0 0 0 37.554 7.887 A 1.786 1.786 0 0 0 36.657 7.487 A 2.437 2.437 0 0 0 36.278 7.458 A 2.332 2.332 0 0 0 35.686 7.53 A 1.759 1.759 0 0 0 35.002 7.876 A 1.809 1.809 0 0 0 34.481 8.597 A 2.527 2.527 0 0 0 34.342 9.064 Z"
+            d="M 92.9 19.3 L 92.9 7.1 L 55.8 7.1 L 55.8 0 L 41.1 0 L 41.1 7.1 L 4.2 7.1 L 4.2 19.3 L 41.1 19.3 L 41.1 23.3 L 10.8 23.3 L 10.8 35.4 L 88.3 35.4 L 88.3 23.3 L 55.8 23.3 L 55.8 19.3 L 92.9 19.3 Z M 87.1 39.6 L 12.1 39.6 L 12.1 51.6 C 12.1 59.76 11.447 70.531 5.343 79.589 A 32.494 32.494 0 0 1 0 85.7 C 2.775 87.311 7.953 91.727 10.587 94.572 A 19.843 19.843 0 0 1 11.4 95.5 C 18.5 89 22.4 80.1 24.4 71.2 L 72.5 71.2 L 72.5 76.7 L 87.1 76.7 L 87.1 39.6 Z M 72.5 59.1 L 55.6 59.1 L 55.6 51.3 L 72.5 51.3 L 72.5 59.1 Z M 41.5 51.3 L 41.5 59.1 L 26.2 59.1 A 103.213 103.213 0 0 0 26.454 54.547 A 84.133 84.133 0 0 0 26.5 51.8 L 26.5 51.3 L 41.5 51.3 Z"
             vector-effect="non-scaling-stroke"
-          />
+          ></path>
         </g>
       </svg>
+
       <a href="https://github.com/NPetz">made w/ 💖 by NPetz</a>
     </div>
   </main>
@@ -79,7 +79,7 @@
 
 <script>
 import SearchBar from "./components/SearchBar.vue";
-import SearchOptions from "./components/SearchOptions.vue";
+import OptionsBar from "./components/OptionsBar/OptionsBar.vue";
 
 import * as firebase from "firebase/app";
 import "firebase/analytics";
@@ -103,33 +103,25 @@ export default {
   name: "Koe",
   metaInfo: {
     title: "Koe",
-    link: [{ rel: "favicon", href: "favicon.svg" }],
-    meta: [
-      { charset: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { httpEquiv: "X-UA-Compatible", content: "IE=edge,chrome=1" },
-      { name: "HandheldFriendly", content: "true" },
-    ],
   },
   components: {
     SearchBar,
-    SearchOptions,
+    OptionsBar,
   },
 
   data: () => {
     return {
-      options: false,
-      japRes: false,
-      engRes: false,
-      fetchingOptions: null,
+      options: null,
+      japRes: "",
+      engRes: "",
+      fetchingOptions: false,
       optionsError: false,
-      searchingJap: false,
       errorJap: false,
       errorEng: false,
-
+      searchingJap: false,
       searchingEng: false,
-      currentKeyword: null,
-      currentSearch: null,
+      currentKeyword: "",
+      currentSearch: "",
       scrollInterval: null,
       mousePosition: null,
       throttling: false,
@@ -157,7 +149,7 @@ export default {
         this.fetchingOptions = false;
         this.optionsError = false;
         const words = JSON.parse(data.contents).words;
-        this.options = words ?? null;
+        this.options = words;
       } catch (error) {
         this.optionsError = true;
         // TODO if not 200 display try again in search results
@@ -199,15 +191,11 @@ export default {
       );
       const data = await response.json();
 
-      console.log("eng raw data", data);
-
       const htmlData = parser
         .parseFromString(data.contents, "text/html")
         .querySelector("pre");
 
       let htmlRes = htmlData?.innerText.split("\n")[0] ?? null;
-
-      console.log(htmlRes);
 
       htmlRes = htmlRes
         .replace(/\//, " ")
@@ -381,7 +369,7 @@ main {
 #credits {
   position: absolute;
   right: 50%;
-  bottom: 10px;
+  bottom: 5px;
   font-size: 0.6rem;
   transform: translateX(50%);
 }
@@ -391,7 +379,7 @@ main {
   white-space: nowrap;
 }
 #credits svg {
-  width: 50px;
+  width: 25px;
   height: auto;
   display: block;
   margin: 0 auto;
