@@ -101,9 +101,7 @@ const parser = new DOMParser();
 
 export default {
   name: "Koe",
-  metaInfo: {
-    title: "Koe",
-  },
+  title: "Koe",
   components: {
     SearchBar,
     OptionsBar,
