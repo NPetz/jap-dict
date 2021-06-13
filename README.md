@@ -1,2 +1,1 @@
-# Japanese Dictionary
-
+＃ Koe, a mulit-language definition Japanese Dictionary
