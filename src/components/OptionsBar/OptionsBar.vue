@@ -15,20 +15,18 @@
     "
   >
     <ul v-if="options !== null">
-      <OptionCell
-        v-for="(entry, index) in options"
-        :key="index"
-        @click="
-          $emit('fetch-definition', entry);
-          toggleActive($event);
-        "
-      >
-        {{ parseOptionHeading(entry.heading) }}
-      </OptionCell>
-
-      <ErrorCell v-if="!options && !fetching">
-        {{ error ? "ERROR - TRY AGAIN" : "NO RESULTS" }}
-      </ErrorCell>
+      <transition-group name="fadeIn">
+        <OptionCell
+          v-for="(entry, index) in options"
+          :key="index"
+          @click="handleClick($event, entry)"
+        >
+          {{ parseOptionHeading(entry.heading) }}
+        </OptionCell>
+        <ErrorCell v-if="!options && !fetching">
+          {{ error ? "ERROR - TRY AGAIN" : "NO RESULTS" }}
+        </ErrorCell>
+      </transition-group>
     </ul>
   </div>
 </template>
@@ -51,13 +49,8 @@ export default {
     throttling: false,
   }),
   watch: {
-    prop(newV, oldV) {
-      if (
-        oldV.fetchingOptions &&
-        !newV.fetchingOptions &&
-        newV.options &&
-        !newV.error
-      ) {
+    options(newV, oldV) {
+      if (oldV !== newV && !this.fetching && !this.error) {
         setTimeout(() => {
           let hits = document.querySelector(".hit");
           hits.click();
@@ -72,7 +65,10 @@ export default {
       text = text.replace(afterParenthesis, "");
       return text;
     },
-
+    handleClick(e, entry) {
+      this.$emit("fetch-definition", entry);
+      this.toggleActive(e);
+    },
     toggleActive(e) {
       let hits = document.querySelectorAll(".hit");
       hits.forEach((x) => {
@@ -154,7 +150,7 @@ export default {
   transition: all 1s ease;
 }
 .fadeIn-leave-active {
-  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+  transition: all 1s cubic-bezier(1, 0.5, 0.8, 1);
 }
 .fadeIn-enter, .fadeIn-leave-to
 /* .slide-fade-leave-active below version 2.1.8 */ {

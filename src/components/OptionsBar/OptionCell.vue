@@ -1,11 +1,5 @@
 <template>
-  <li
-    class="hit"
-    @click="
-      $emit('fetch-definition', entry);
-      toggleActive($event);
-    "
-  >
+  <li class="hit">
     <p><slot></slot></p>
   </li>
 </template>

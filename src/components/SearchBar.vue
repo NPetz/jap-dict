@@ -7,7 +7,12 @@
     v-bind:class="{ firstVisit: firstTime, shake: error }"
     v-on:submit.prevent="onSubmit($event)"
   >
-    <input type="text" placeholder="lookup a japanese word" id="input" />
+    <input
+      autocomplete="off"
+      type="text"
+      placeholder="lookup a japanese word"
+      id="input"
+    />
     <button class="ripple" type="submit">
       <svg
         xmlns="http://www.w3.org/2000/svg"
