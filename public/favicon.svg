@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs" width="92.9" height="95.5"><svg width="92.9" height="95.5" viewBox="0 0 92.9 95.5" xmlns="http://www.w3.org/2000/svg">
+    <g id="SvgjsG1000" stroke-linecap="round" fill-rule="evenodd" font-size="9pt" stroke="#fff" fill="#fff" stroke-width="0.25mm" style="stroke:#fff;stroke-width:0.25mm">
+        <path d="M 92.9 19.3 L 92.9 7.1 L 55.8 7.1 L 55.8 0 L 41.1 0 L 41.1 7.1 L 4.2 7.1 L 4.2 19.3 L 41.1 19.3 L 41.1 23.3 L 10.8 23.3 L 10.8 35.4 L 88.3 35.4 L 88.3 23.3 L 55.8 23.3 L 55.8 19.3 L 92.9 19.3 Z M 87.1 39.6 L 12.1 39.6 L 12.1 51.6 C 12.1 59.76 11.447 70.531 5.343 79.589 A 32.494 32.494 0 0 1 0 85.7 C 2.775 87.311 7.953 91.727 10.587 94.572 A 19.843 19.843 0 0 1 11.4 95.5 C 18.5 89 22.4 80.1 24.4 71.2 L 72.5 71.2 L 72.5 76.7 L 87.1 76.7 L 87.1 39.6 Z M 72.5 59.1 L 55.6 59.1 L 55.6 51.3 L 72.5 51.3 L 72.5 59.1 Z M 41.5 51.3 L 41.5 59.1 L 26.2 59.1 A 103.213 103.213 0 0 0 26.454 54.547 A 84.133 84.133 0 0 0 26.5 51.8 L 26.5 51.3 L 41.5 51.3 Z" vector-effect="non-scaling-stroke"></path>
+    </g>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: brightness(0.1); } }
+@media (prefers-color-scheme: dark) { :root { filter: brightness(1); } }
+</style></svg>
