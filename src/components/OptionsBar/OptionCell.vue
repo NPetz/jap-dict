@@ -15,7 +15,7 @@ export default { name: "OptionCell" };
   align-items: center;
   justify-content: center;
   flex: 1 0 auto;
-  font-size: 1em;
+  font-size: 1rem;
   padding: 0.5rem 1rem;
   color: #333;
   background-color: #fff;
@@ -48,6 +48,7 @@ export default { name: "OptionCell" };
 .hit.active {
   color: #eee;
   background-color: #333;
-  min-width: 80%;
+  min-width: 95%;
+  font-size: 1.2rem;
 }
 </style>

@@ -3,16 +3,7 @@
     id="hits-container"
     @mouseenter="scrollEnter"
     @mouseleave="scrollLeave"
-    @mousemove="
-      (e) => {
-        if (!throttling) {
-          mousePosition = e.x;
-        } else {
-          throttling = true;
-          setTimeout(() => (throttling = false), 300);
-        }
-      }
-    "
+    @mousemove="mouseMove"
   >
     <ul v-if="options !== null">
       <transition-group name="fadeIn">
@@ -54,7 +45,7 @@ export default {
         setTimeout(() => {
           let hits = document.querySelector(".hit");
           hits.click();
-        }, 1000);
+        }, 500);
       }
     },
   },
@@ -88,7 +79,7 @@ export default {
       }, 400);
     },
     scrollEnter(e) {
-      let target = e.currentTarget;
+      let target = e.currentTarget.firstElementChild;
       this.scrollInterval = setInterval(() => {
         if (this.mousePosition < window.innerWidth * 0.15) {
           target.scrollLeft -= 25;
@@ -102,6 +93,14 @@ export default {
     },
     scrollLeave() {
       clearInterval(this.scrollInterval);
+    },
+    mouseMove(e) {
+      if (!this.throttling) {
+        this.mousePosition = e.x;
+      } else {
+        this.throttling = true;
+        setTimeout(() => (this.throttling = false), 300);
+      }
     },
   },
 };

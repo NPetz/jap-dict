@@ -1,5 +1,5 @@
 <template>
-  <li class="errorHit">
+  <li class="hit">
     <p><slot></slot></p>
   </li>
 </template>
@@ -9,7 +9,7 @@ export default { name: "ErrorCell" };
 </script>
 
 <style>
-.errorHit {
+.hit {
   display: flex;
   position: relative;
   align-items: center;

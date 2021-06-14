@@ -10,49 +10,14 @@
       />
     </header>
 
-    <section id="results" v-if="engRes || japRes">
-      <section id="japRes">
-        <div class="loader" v-if="searchingJap"></div>
-        <article class="resultWrapper" v-if="japRes">
-          <h2 class="languageLabel">日本語</h2>
-          <div class="definition">
-            {{ japRes.def }}
-            <ul
-              id="links-list"
-              @mouseenter="scrollEnter"
-              @mouseleave="scrollLeave"
-              @mousemove="
-                (e) => {
-                  if (!throttling) {
-                    mousePosition = e.clientX;
-                  } else {
-                    throttling = true;
-                    setTimeout(() => (throttling = false), 300);
-                  }
-                }
-              "
-            >
-              <li
-                class="link"
-                v-for="(entry, index) in japRes.links"
-                :key="index"
-                @click="fetchOptions(entry.match(/【(.*)】/, '')[1])"
-              >
-                {{ entry }}
-              </li>
-            </ul>
-          </div>
-        </article>
-      </section>
+    <ResultsSection
+      :engRes="engRes"
+      :japRes="japRes"
+      :fetchingEng="fetchingEng"
+      :errorEng="errorEng"
+      @search="fetchOptions"
+    />
 
-      <section id="engRes">
-        <article v-if="engRes || searchingEng" class="resultWrapper">
-          <h2 class="languageLabel">English</h2>
-          <div class="loader" v-if="searchingEng"></div>
-          <div class="definition" v-if="engRes" v-html="engRes"></div>
-        </article>
-      </section>
-    </section>
     <div id="credits">
       <a id="github" href="https://github.com/NPetz"
         ><svg viewBox="0 0 128 128">
@@ -90,6 +55,7 @@
 <script>
 import SearchBar from "./components/SearchBar.vue";
 import OptionsBar from "./components/OptionsBar/OptionsBar.vue";
+import ResultsSection from "./components/ResultsSection.vue";
 
 import * as firebase from "firebase/app";
 import "firebase/analytics";
@@ -114,6 +80,7 @@ export default {
   components: {
     SearchBar,
     OptionsBar,
+    ResultsSection,
   },
   beforeMount() {
     document.querySelector("title").textContent = "Koe";
@@ -126,10 +93,8 @@ export default {
       engRes: "",
       fetchingOptions: false,
       optionsError: false,
-      errorJap: false,
       errorEng: false,
-      searchingJap: false,
-      searchingEng: false,
+      fetchingEng: false,
       currentKeyword: "",
       currentSearch: "",
       scrollInterval: null,
@@ -166,7 +131,6 @@ export default {
         console.log(error);
       }
     },
-
     fetchDefinition(e) {
       if (e !== this.currentSearch) {
         this.currentSearch = e;
@@ -178,19 +142,17 @@ export default {
         console.log("same search");
       }
     },
-
     parseJap(text) {
       // TODO better parsing
       // remove parts in suqre brackets
       text = text.replace(/\[([^\]]+)\]/g, "");
       // split at ⇒
-      let [def, ...links] = text.split(/[⇒→]/);
+      const [def, ...links] = text.split(/[⇒→]/);
 
       return { def, links };
     },
-
     async fetchEng(term) {
-      this.searchingEng = true;
+      this.fetchingEng = true;
       this.engRes = null;
 
       const uri = `https://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic?1ZUJ${encodeURIComponent(
@@ -216,26 +178,11 @@ export default {
         .replace(/\/(\()/g, "\n$1");
 
       if (htmlRes) {
-        this.searchingEng = false;
+        this.fetchingEng = false;
         this.engRes = htmlRes;
       } else {
         this.engRes = "No Results";
       }
-    },
-    scrollEnter(e) {
-      let target = e.currentTarget;
-      let width = e.currentTarget.offsetWidth;
-      let { left: leftCoord } = target.getBoundingClientRect();
-      this.scrollInterval = setInterval(() => {
-        if (this.mousePosition < leftCoord + width * 0.15) {
-          target.scrollLeft -= 25;
-        } else if (this.mousePosition > leftCoord + width - width * 0.15) {
-          target.scrollLeft += 25;
-        }
-      }, 50);
-    },
-    scrollLeave() {
-      clearInterval(this.scrollInterval);
     },
   },
 };
@@ -280,96 +227,6 @@ main {
   padding: 1rem;
 }
 
-/* results */
-
-#results {
-  padding: 1rem;
-  display: flex;
-  flex-grow: 1;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
-  gap: 1rem;
-}
-#results::-webkit-scrollbar {
-  height: 10px;
-  background-color: #eee;
-  display: none;
-}
-#japRes,
-#engRes {
-  display: flex;
-  flex-grow: 1;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 100%;
-}
-
-.resultWrapper {
-  border: 1px solid #333;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.languageLabel {
-  display: flex;
-  align-self: flex-start;
-  margin: 0.5rem 0 0 0.5rem;
-  align-items: center;
-  background-color: #333;
-  color: #eee;
-  padding: 0 0.5rem;
-  font-size: 1rem;
-  height: 2rem;
-}
-
-.definition {
-  word-break: break-word;
-  white-space: pre-line;
-  font-size: 1.3em;
-  padding: 1rem 3rem 3rem;
-  width: 100%;
-  max-width: 600px;
-}
-/* japRes */
-
-#links-list {
-  display: flex;
-  width: 100%;
-  overflow-x: auto;
-  list-style: none;
-  font-size: 0.8em;
-  margin-top: 1em;
-  gap: 1rem;
-  background: linear-gradient(
-    180deg,
-    transparent calc(50% - 1px),
-    #333 calc(50%),
-    transparent calc(50% + 1px)
-  );
-}
-#links-list::-webkit-scrollbar {
-  height: 10px;
-  background-color: #eee;
-  display: none;
-}
-.link {
-  background-color: #333;
-  border: 1px solid #333;
-  color: #eee;
-  white-space: nowrap;
-  padding: 0.1rem 0.5rem;
-  transition: all 0.2s;
-  cursor: pointer;
-  user-select: none;
-  margin: 0 auto;
-}
-
 /* credits */
 
 #credits {
@@ -397,75 +254,5 @@ main {
   left: 50%;
   transform: translateX(-50%);
   margin: 0 auto;
-}
-
-/* loader */
-
-.loader {
-  font-size: 10px;
-  margin: 3rem;
-  text-indent: -9999em;
-  width: 11em;
-  height: 11em;
-  border-radius: 50%;
-  background: #333333;
-  background: -moz-linear-gradient(left, #333333 10%, rgba(51, 51, 51, 0) 42%);
-  background: -webkit-linear-gradient(
-    left,
-    #333333 10%,
-    rgba(51, 51, 51, 0) 42%
-  );
-  background: -o-linear-gradient(left, #333333 10%, rgba(51, 51, 51, 0) 42%);
-  background: -ms-linear-gradient(left, #333333 10%, rgba(51, 51, 51, 0) 42%);
-  background: linear-gradient(to right, #333333 10%, rgba(51, 51, 51, 0) 42%);
-  position: relative;
-  -webkit-animation: load3 1.4s infinite linear;
-  animation: load3 1.4s infinite linear;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-}
-.loader:before {
-  width: 50%;
-  height: 50%;
-  background: #333333;
-  border-radius: 100% 0 0 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  content: "";
-}
-.loader:after {
-  background: #fff;
-  width: 75%;
-  height: 75%;
-  border-radius: 50%;
-  content: "";
-  margin: auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-@-webkit-keyframes load3 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes load3 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
 }
 </style>
