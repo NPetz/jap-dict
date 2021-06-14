@@ -1,7 +1,7 @@
 <template>
   <main>
     <header id="searchArea">
-      <SearchBar @search="fetchOptions($event)" />
+      <SearchBar @search="fetchOptions" />
       <OptionsBar
         :options="options"
         :fetching="fetchingOptions"
@@ -97,19 +97,11 @@ export default {
       fetchingEng: false,
       currentKeyword: "",
       currentSearch: "",
-      scrollInterval: null,
-      mousePosition: null,
-      throttling: false,
     };
   },
 
   methods: {
     async fetchOptions(input) {
-      // case search is same as current and there are no errors
-      if (input === this.currentKeyword && !this.optionsError) {
-        // highligth current search
-        return;
-      }
       const japApiUrl = encodeURIComponent(
         ` https://sakura-paris.org/dict/?api=1&q=${input}&dict=広辞苑&max=10`
       );
@@ -123,66 +115,97 @@ export default {
         const data = await response.json();
         this.fetchingOptions = false;
         this.optionsError = false;
-        const words = JSON.parse(data.contents).words;
-        this.options = words;
+        let words = JSON.parse(data.contents).words;
+        if (words) {
+          words = words.filter((w) => {
+            w.heading = this.parseOptionsHeading(w.heading);
+            return w.heading;
+          });
+          this.options = words ?? "";
+        } else {
+          this.options = "";
+        }
       } catch (error) {
         this.optionsError = true;
-        // TODO if not 200 display try again in search results
-        console.log(error);
+        this.fetchingOptions = false;
       }
     },
-    fetchDefinition(e) {
-      if (e !== this.currentSearch) {
-        this.currentSearch = e;
-
-        this.japRes = this.parseJap(e.text);
-        this.fetchEng(e.heading.match(/【(.*)】/)[1]);
-      } else {
-        // TODO if same search shake hits and highlihg tresults
-        console.log("same search");
-      }
+    parseOptionsHeading(heading) {
+      const weirdChar = /○|🄰/;
+      const afterParenthesis = /\[.*/;
+      heading = heading.replace(afterParenthesis, "").replace(weirdChar, "");
+      return heading;
     },
-    parseJap(text) {
-      // TODO better parsing
-      // remove parts in suqre brackets
-      text = text.replace(/\[([^\]]+)\]/g, "");
-      // split at ⇒
-      const [def, ...links] = text.split(/[⇒→]/);
+    fetchDefinition(term) {
+      this.currentSearch = term.heading;
+      this.japRes = this.parseJap(term);
 
-      return { def, links };
+      const hiraganaOrKatakana = term.heading
+        .replace(/【(.*)】/, "")
+        .replace(/‐/g, "");
+      const kanjiInSquareBrackets = term.heading.match(/【(.*)】/);
+      this.fetchEng(
+        kanjiInSquareBrackets ? kanjiInSquareBrackets[1] : hiraganaOrKatakana
+      );
     },
     async fetchEng(term) {
       this.fetchingEng = true;
       this.engRes = null;
-
       const uri = `https://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic?1ZUJ${encodeURIComponent(
         term
       )}`;
       const response = await fetch(
         `https://api.allorigins.win/get?url=${encodeURIComponent(uri)}`
       );
-      const data = await response.json();
 
+      try {
+        const data = await response.json();
+        this.fetchingEng = false;
+        this.engRes = this.parseEng(data);
+      } catch (error) {
+        console.log(error);
+        this.fetchingEng = false;
+        this.engRes = { heading: "ERROR", body: "NO RESULTS FOUND" };
+      }
+    },
+    parseJap(option) {
+      const text = option.text.replace(/\[([^\]]+)\]/g, "");
+
+      const [, ...body] = text.split("\n").filter((l) => {
+        if (l.match(/[⇒→]/) || l.match(/^\(.*\)$/)) {
+          return false;
+        }
+        return l;
+      });
+
+      return { heading: option.heading, body };
+    },
+    parseEng(rawRes) {
       const htmlData = parser
-        .parseFromString(data.contents, "text/html")
+        .parseFromString(rawRes.contents, "text/html")
         .querySelector("pre");
 
-      let htmlRes = htmlData?.innerText.split("\n")[0] ?? null;
+      const htmlRes = htmlData?.innerText.split("\n") ?? null;
 
-      htmlRes = htmlRes
-        .replace(/\//, " ")
-        .replace(/\/$/, "")
-        .replace(/(?<=\w)(\/)(?=\w)/g, ", ")
-        .replace(/\/\(P\)/, "")
-        .replace(/]/, "$&\n")
-        .replace(/\/(\()/g, "\n$1");
+      const definition = htmlRes.map((r) => {
+        r = r
+          .replace(/\//, " ")
+          .replace(/\/$/, "")
+          .replace(/(?<=\w)(\/)(?=\w)/g, ", ")
+          .replace(/\/\(P\)/, "")
+          .replace(/]/, "$&\n")
+          .replace(/\/(\()/g, "\n$1");
 
-      if (htmlRes) {
-        this.fetchingEng = false;
-        this.engRes = htmlRes;
-      } else {
-        this.engRes = "No Results";
-      }
+        const [heading, body] = r.split("\n");
+
+        const isPerfectResult = heading.includes(
+          this.currentSearch.match(/【(.*)】/)[1]
+        );
+
+        return { heading, body, isPerfectResult };
+      });
+
+      return definition[0];
     },
   },
 };

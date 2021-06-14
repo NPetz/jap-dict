@@ -5,16 +5,16 @@
     @mouseleave="scrollLeave"
     @mousemove="mouseMove"
   >
-    <ul v-if="options !== null">
+    <ul v-if="options !== null || error">
       <transition-group name="fadeIn">
         <OptionCell
           v-for="(entry, index) in options"
           :key="index"
           @click="handleClick($event, entry)"
         >
-          {{ parseOptionHeading(entry.heading) }}
+          {{ entry.heading }}
         </OptionCell>
-        <ErrorCell v-if="!options && !fetching">
+        <ErrorCell v-if="(error || options === '') && !fetching">
           {{ error ? "ERROR - TRY AGAIN" : "NO RESULTS" }}
         </ErrorCell>
       </transition-group>
@@ -40,22 +40,16 @@ export default {
     throttling: false,
   }),
   watch: {
-    options(newV, oldV) {
-      if (oldV !== newV && !this.fetching && !this.error) {
+    options(newV) {
+      if (newV && !this.error && !this.fetching) {
         setTimeout(() => {
-          let hits = document.querySelector(".hit");
-          hits.click();
-        }, 500);
+          const firstHit = document.querySelector(".hit");
+          firstHit.click();
+        }, 1000);
       }
     },
   },
   methods: {
-    // TODO tweak this one to be more universal
-    parseOptionHeading(text) {
-      const afterParenthesis = /\[.*/;
-      text = text.replace(afterParenthesis, "");
-      return text;
-    },
     handleClick(e, entry) {
       this.$emit("fetch-definition", entry);
       this.toggleActive(e);
@@ -146,13 +140,13 @@ export default {
 
 /* transitions */
 .fadeIn-enter-active {
-  transition: all 1s ease;
+  transition: all 0.5s ease;
 }
 .fadeIn-leave-active {
-  transition: all 1s cubic-bezier(1, 0.5, 0.8, 1);
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
 }
-.fadeIn-enter, .fadeIn-leave-to
-/* .slide-fade-leave-active below version 2.1.8 */ {
+.fadeIn-enter,
+.fadeIn-leave-to {
   transform: translateX(100%);
   opacity: 0;
 }
